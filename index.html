@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>スケジュール</title>
+        <link rel="stylesheet" href="css/style.css">
+        <link type="text/css" rel="stylesheet" href="css/jquery-ui.min.css" />
+        <script type="text/javascript" src="lib/jquery/jquery-3.1.1.min.js"></script>
+        <script type="text/javascript" src="lib/jquery/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="js/floatbox.js"></script>
+        <script type="text/javascript" src="js/schedule.js"></script>
+        <script type="text/javascript" src="js/scheduleDetail.js"></script>
+        <script type="text/javascript" src="js/keyPress.js"></script>
+        <script type="text/javascript" src="js/util.js"></script>
+        <script type="text/javascript" src="data/json.js"></script>
+    </head>
+    
+    <script>
+        var timer = false;
+        
+        $(window).resize(function() {
+            
+            if (timer !== false) {
+                clearTimeout(timer);
+            }
+            
+            timer = setTimeout(function() {
+                // 全Floatbox再表示する。
+                reloadAllFloatbox();
+                
+            }, 100);
+        });
+        
+        $(function(){
+
+            // スケジュール画面に対する操作
+            $(function(){
+                
+                // マウス通過時
+                td_default("#scheduleTable");
+
+                // シングルクリック
+                $("#scheduleTable td").click(function(){
+                    td_default("#scheduleTable");
+                    td_click($(this));
+                });
+
+                // ダブルクリック
+                $("#scheduleTable td").dblclick(function(){
+                    td_default("#scheduleTable");
+                    td_dblclick($(this));
+                });
+
+                loadAllFloatbox();
+
+            });
+        });
+        
+    </script>
+    
+    <body id="scheduleBody">
+        <!-- ここからモーダルウィンドウ -->
+        <div id="modal-content">
+            <table id="scheduleDetail">
+                <tr>
+                    <td rowspan="2">日時</td>
+                    <td><input type="date" id="date" value="2017-01-08"></td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="text" id="timeFrom" list="timeFromList" size="5"/>
+                        <datalist id="timeFromList">
+                            <option value=""></option>
+                            <option value="08:00"/>
+                            <option value="08:30"/>
+                            <option value="09:00"/>
+                            <option value="09:30"/>
+                            <option value="10:00"/>
+                            <option value="10:30"/>
+                            <option value="11:00"/>
+                            <option value="11:30"/>
+                            <option value="12:00"/>
+                            <option value="12:30"/>
+                            <option value="13:00"/>
+                            <option value="13:30"/>
+                            <option value="14:00"/>
+                            <option value="14:30"/>
+                            <option value="15:00"/>
+                            <option value="15:30"/>
+                            <option value="16:00"/>
+                            <option value="16:30"/>
+                            <option value="17:00"/>
+                            <option value="17:30"/>
+                            <option value="18:00"/>
+                            <option value="18:30"/>
+                            <option value="19:00"/>
+                            <option value="19:30"/>
+                            <option value="20:00"/>
+                            <option value="20:30"/>
+                            <option value="21:00"/>
+                            <option value="21:30"/>
+                        </datalist>
+                        ～
+                        <input type="text" id="timeTo" list="timeToList" size="5"/>
+                        <datalist id="timeToList">
+                            <option value=""></option>
+                            <option value="08:00"/>
+                            <option value="08:30"/>
+                            <option value="09:00"/>
+                            <option value="09:30"/>
+                            <option value="10:00"/>
+                            <option value="10:30"/>
+                            <option value="11:00"/>
+                            <option value="11:30"/>
+                            <option value="12:00"/>
+                            <option value="12:30"/>
+                            <option value="13:00"/>
+                            <option value="13:30"/>
+                            <option value="14:00"/>
+                            <option value="14:30"/>
+                            <option value="15:00"/>
+                            <option value="15:30"/>
+                            <option value="16:00"/>
+                            <option value="16:30"/>
+                            <option value="17:00"/>
+                            <option value="17:30"/>
+                            <option value="18:00"/>
+                            <option value="18:30"/>
+                            <option value="19:00"/>
+                            <option value="19:30"/>
+                            <option value="20:00"/>
+                            <option value="20:30"/>
+                            <option value="21:00"/>
+                            <option value="21:30"/>
+                        </datalist>
+                    </td>
+                    <td>
+                        <label id="floatboxId", value="" style="display:none" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>件名</td>
+                    <td>
+                        <input type="text" id="title" size="45px" value="金融案件" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>場所</td>
+                    <td><input type="text" id="location" size="45px" value="A会議室"/></td>
+                </tr>
+                <tr>
+                    <td>担当者</td>
+                    <td><input type="text" id="staff" size="45px" value="鈴木 太郎"/></td>
+                </tr>
+                <tr>
+                    <td>更改範囲</td>
+                    <td>件名、場所のみ</td>
+                </tr>
+                <tr>
+                    <td>内容</td>
+                    <td><textarea cols=50 rows=10 id="content" >ヨドバシカメラ金融案件です。ご出席願いいます。</textarea></td>
+                </tr>
+            </table>
+            <p><a id="modal-close" class="button-link">閉じる</a></p>
+        <!-- モーダルウィンドウのコンテンツ終了 -->
+        </div>
+        
+        <table border="1" id="scheduleTable">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>8日（日）</th>
+                    <th>9日（月）</th>
+                    <th>10日（火）</th>
+                    <th>11日（水）</th>
+                    <th>12日（木）</th>
+                    <th>13日（金）</th>
+                    <th>14日（土）</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th rowspan="2">8</th>
+                    <td id="20170108_0800" class="closeOfBusiness"></td>
+                    <td id="20170109_0800"></td>
+                    <td id="20170110_0800"></td>
+                    <td id="20170111_0800"></td>
+                    <td id="20170112_0800"></td>
+                    <td id="20170113_0800"></td>
+                    <td id="20170114_0800" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <td id="20170108_0830" class="closeOfBusiness"></td>
+                    <td id="20170109_0830"></td>
+                    <td id="20170110_0830"></td>
+                    <td id="20170111_0830"></td>
+                    <td id="20170112_0830"></td>
+                    <td id="20170113_0830"></td>
+                    <td id="20170114_0830" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <th rowspan="2">9</th>
+                    <td id="20170108_0900" class="closeOfBusiness"></td>
+                    <td id="20170109_0900"></td>
+                    <td id="20170110_0900"></td>
+                    <td id="20170111_0900"></td>
+                    <td id="20170112_0900"></td>
+                    <td id="20170113_0900"></td>
+                    <td id="20170114_0900" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <td id="20170108_0930" class="closeOfBusiness"></td>
+                    <td id="20170109_0930"></td>
+                    <td id="20170110_0930"></td>
+                    <td id="20170111_0930"></td>
+                    <td id="20170112_0930"></td>
+                    <td id="20170113_0930"></td>
+                    <td id="20170114_0930" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <th rowspan="2">10</th>
+                    <td id="20170108_1000" class="closeOfBusiness"></td>
+                    <td id="20170109_1000"></td>
+                    <td id="20170110_1000"></td>
+                    <td id="20170111_1000"></td>
+                    <td id="20170112_1000"></td>
+                    <td id="20170113_1000"></td>
+                    <td id="20170114_1000" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <td id="20170108_1030" class="closeOfBusiness"></td>
+                    <td id="20170109_1030"></td>
+                    <td id="20170110_1030"></td>
+                    <td id="20170111_1030"></td>
+                    <td id="20170112_1030"></td>
+                    <td id="20170113_1030"></td>
+                    <td id="20170114_1030" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <th rowspan="2">11</th>
+                    <td id="20170108_1100" class="closeOfBusiness"></td>
+                    <td id="20170109_1100"></td>
+                    <td id="20170110_1100"></td>
+                    <td id="20170111_1100"></td>
+                    <td id="20170112_1100"></td>
+                    <td id="20170113_1100"></td>
+                    <td id="20170114_1100" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <td id="20170108_1130" class="closeOfBusiness"></td>
+                    <td id="20170109_1130"></td>
+                    <td id="20170110_1130"></td>
+                    <td id="20170111_1130"></td>
+                    <td id="20170112_1130"></td>
+                    <td id="20170113_1130"></td>
+                    <td id="20170114_1130" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <th rowspan="2">12</th>
+                    <td id="20170108_1200" class="closeOfBusiness"></td>
+                    <td id="20170109_1200"></td>
+                    <td id="20170110_1200"></td>
+                    <td id="20170111_1200"></td>
+                    <td id="20170112_1200"></td>
+                    <td id="20170113_1200"></td>
+                    <td id="20170114_1200" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <td id="20170108_1230" class="closeOfBusiness"></td>
+                    <td id="20170109_1230"></td>
+                    <td id="20170110_1230"></td>
+                    <td id="20170111_1230"></td>
+                    <td id="20170112_1230"></td>
+                    <td id="20170113_1230"></td>
+                    <td id="20170114_1230" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <th rowspan="2">13</th>
+                    <td id="20170108_1300" class="closeOfBusiness"></td>
+                    <td id="20170109_1300"></td>
+                    <td id="20170110_1300"></td>
+                    <td id="20170111_1300"></td>
+                    <td id="20170112_1300"></td>
+                    <td id="20170113_1300"></td>
+                    <td id="20170114_1300" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <td id="20170108_1330" class="closeOfBusiness"></td>
+                    <td id="20170109_1330"></td>
+                    <td id="20170110_1330"></td>
+                    <td id="20170111_1330"></td>
+                    <td id="20170112_1330"></td>
+                    <td id="20170113_1330"></td>
+                    <td id="20170114_1330" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <th rowspan="2">14</th>
+                    <td id="20170108_1400" class="closeOfBusiness"></td>
+                    <td id="20170109_1400"></td>
+                    <td id="20170110_1400"></td>
+                    <td id="20170111_1400"></td>
+                    <td id="20170112_1400"></td>
+                    <td id="20170113_1400"></td>
+                    <td id="20170114_1400" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <td id="20170108_1430" class="closeOfBusiness"></td>
+                    <td id="20170109_1430"></td>
+                    <td id="20170110_1430"></td>
+                    <td id="20170111_1430"></td>
+                    <td id="20170112_1430"></td>
+                    <td id="20170113_1430"></td>
+                    <td id="20170114_1430" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <th rowspan="2">15</th>
+                    <td id="20170108_1500" class="closeOfBusiness"></td>
+                    <td id="20170109_1500"></td>
+                    <td id="20170110_1500"></td>
+                    <td id="20170111_1500"></td>
+                    <td id="20170112_1500"></td>
+                    <td id="20170113_1500"></td>
+                    <td id="20170114_1500" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <td id="20170108_1530" class="closeOfBusiness"></td>
+                    <td id="20170109_1530"></td>
+                    <td id="20170110_1530"></td>
+                    <td id="20170111_1530"></td>
+                    <td id="20170112_1530"></td>
+                    <td id="20170113_1530"></td>
+                    <td id="20170114_1530" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <th rowspan="2">16</th>
+                    <td id="20170108_1600" class="closeOfBusiness"></td>
+                    <td id="20170109_1600"></td>
+                    <td id="20170110_1600"></td>
+                    <td id="20170111_1600"></td>
+                    <td id="20170112_1600"></td>
+                    <td id="20170113_1600"></td>
+                    <td id="20170114_1600" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <td id="20170108_1630" class="closeOfBusiness"></td>
+                    <td id="20170109_1630"></td>
+                    <td id="20170110_1630"></td>
+                    <td id="20170111_1630"></td>
+                    <td id="20170112_1630"></td>
+                    <td id="20170113_1630"></td>
+                    <td id="20170114_1630" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <th rowspan="2">17</th>
+                    <td id="20170108_1700" class="closeOfBusiness"></td>
+                    <td id="20170109_1700"></td>
+                    <td id="20170110_1700"></td>
+                    <td id="20170111_1700"></td>
+                    <td id="20170112_1700"></td>
+                    <td id="20170113_1700"></td>
+                    <td id="20170114_1700" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <td id="20170108_1730" class="closeOfBusiness"></td>
+                    <td id="20170109_1730"></td>
+                    <td id="20170110_1730"></td>
+                    <td id="20170111_1730"></td>
+                    <td id="20170112_1730"></td>
+                    <td id="20170113_1730"></td>
+                    <td id="20170114_1730" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <th rowspan="2">18</th>
+                    <td id="20170108_1800" class="closeOfBusiness"></td>
+                    <td id="20170109_1800"></td>
+                    <td id="20170110_1800"></td>
+                    <td id="20170111_1800"></td>
+                    <td id="20170112_1800"></td>
+                    <td id="20170113_1800"></td>
+                    <td id="20170114_1800" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <td id="20170108_1830" class="closeOfBusiness"></td>
+                    <td id="20170109_1830"></td>
+                    <td id="20170110_1830"></td>
+                    <td id="20170111_1830"></td>
+                    <td id="20170112_1830"></td>
+                    <td id="20170113_1830"></td>
+                    <td id="20170114_1830" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <th rowspan="2">19</th>
+                    <td id="20170108_1900" class="closeOfBusiness"></td>
+                    <td id="20170109_1900" class="closeOfBusiness"></td>
+                    <td id="20170110_1900" class="closeOfBusiness"></td>
+                    <td id="20170111_1900" class="closeOfBusiness"></td>
+                    <td id="20170112_1900" class="closeOfBusiness"></td>
+                    <td id="20170113_1900" class="closeOfBusiness"></td>
+                    <td id="20170114_1900" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <td id="20170108_1930" class="closeOfBusiness"></td>
+                    <td id="20170109_1930" class="closeOfBusiness"></td>
+                    <td id="20170110_1930" class="closeOfBusiness"></td>
+                    <td id="20170111_1930" class="closeOfBusiness"></td>
+                    <td id="20170112_1930" class="closeOfBusiness"></td>
+                    <td id="20170113_1930" class="closeOfBusiness"></td>
+                    <td id="20170114_1930" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <th rowspan="2">20</th>
+                    <td id="20170108_2000" class="closeOfBusiness"></td>
+                    <td id="20170109_2000" class="closeOfBusiness"></td>
+                    <td id="20170110_2000" class="closeOfBusiness"></td>
+                    <td id="20170111_2000" class="closeOfBusiness"></td>
+                    <td id="20170112_2000" class="closeOfBusiness"></td>
+                    <td id="20170113_2000" class="closeOfBusiness"></td>
+                    <td id="20170114_2000" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <td id="20170108_2030" class="closeOfBusiness"></td>
+                    <td id="20170109_2030" class="closeOfBusiness"></td>
+                    <td id="20170110_2030" class="closeOfBusiness"></td>
+                    <td id="20170111_2030" class="closeOfBusiness"></td>
+                    <td id="20170112_2030" class="closeOfBusiness"></td>
+                    <td id="20170113_2030" class="closeOfBusiness"></td>
+                    <td id="20170114_2030" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <th rowspan="2">21</th>
+                    <td id="20170108_2100" class="closeOfBusiness"></td>
+                    <td id="20170109_2100" class="closeOfBusiness"></td>
+                    <td id="20170110_2100" class="closeOfBusiness"></td>
+                    <td id="20170111_2100" class="closeOfBusiness"></td>
+                    <td id="20170112_2100" class="closeOfBusiness"></td>
+                    <td id="20170113_2100" class="closeOfBusiness"></td>
+                    <td id="20170114_2100" class="closeOfBusiness"></td>
+                </tr>
+                <tr>
+                    <td id="20170108_2130" class="closeOfBusiness"></td>
+                    <td id="20170109_2130" class="closeOfBusiness"></td>
+                    <td id="20170110_2130" class="closeOfBusiness"></td>
+                    <td id="20170111_2130" class="closeOfBusiness"></td>
+                    <td id="20170112_2130" class="closeOfBusiness"></td>
+                    <td id="20170113_2130" class="closeOfBusiness"></td>
+                    <td id="20170114_2130" class="closeOfBusiness"></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div id="scheduleBox">
+        </div>
+        
+    </body>
+</html>

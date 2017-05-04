@@ -1,0 +1,117 @@
+body {
+  padding:0px;
+  font:14px/1.5 Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color:#777;
+  font-weight:300;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color:#222;
+  margin:0 0 20px;
+}
+
+p, ul, ol, table, pre, dl {
+  margin:0 0 20px;
+}
+
+h1, h2, h3 {
+  line-height:1.1;
+}
+
+h1 {
+  font-size:28px;
+}
+
+h2 {
+  color:#393939;
+}
+
+h3, h4, h5, h6 {
+  color:#494949;
+}
+
+table{
+    width:100%;
+    border-collapse: collapse;
+}
+
+th{
+    height: 20px;
+    text-align: center;
+    padding: 5px 10px;
+    border-bottom: 1px solid #e5e5e5;
+    background: #B0C4DE;
+    color: #FFFFFF;
+}
+
+td{
+    height: 20px;
+    text-align: left;
+    padding: 5px 10px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.closeOfBusiness{
+    height: 20px;
+    text-align: left;
+    padding: 5px 10px;
+    border-bottom: 1px solid #e5e5e5;
+    background: #DCDCDC;
+}
+
+input {
+    border:1;
+    padding:1px;
+    border-radius: 3px;
+    margin:0 0 0px;
+}
+
+textarea {
+    border:1;
+    padding:1px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    margin:0 0 0px;
+}
+
+select {
+    border:1;
+    padding:1px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    margin:0 0 0px;
+}
+
+#modal-content {
+	width: 55% ;
+	margin: 0 ;
+	padding: 10px 20px ;
+	border: 2px solid #aaa ;
+	background: #fff ;
+	position: fixed ;
+	display: none ;
+	z-index: 30;
+}
+  
+#modal-overlay {
+	z-index: 25 ;
+	display: none ;
+	position: fixed ;
+	top: 0 ;
+	left: 0 ;
+	width: 100% ;
+	height: 120% ;
+	background-color: rgba( 0,0,0, 0.75 ) ;
+}
+
+.button-link {
+	color: #00f ;
+	text-decoration: underline ;
+}
+ 
+.button-link:hover {
+	cursor: pointer ;
+	color: #f00 ;
+}
